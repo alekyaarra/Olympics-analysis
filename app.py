@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
-import preprocessor, helper
+import preprocessor
+import helper
 
 df = pd.read_csv('athlete_events.csv')
 region_df = pd.read_csv('noc_regions.csv')
@@ -14,7 +15,7 @@ st.sidebar.header('Olympic Analysis')
 
 user_menu = st.sidebar.radio(
     'Select an option',
-    ('Medal Tally','Country-wise Analysis', 'Athelete-wise Analysis', 'Overall Analysis')
+    ('Medal Tally','Overall Analysis', 'Country-wise Analysis', 'Athelete-wise Analysis')
 )
 
 #st.dataframe(df_2020)
@@ -28,12 +29,44 @@ if user_menu == 'Medal Tally':
 
     medal_tally = helper.fetch_medal_tally(df, selected_year, selected_country)
     if selected_year == 'Overall' and selected_country == 'Overall':
-        st.title('Overall Medal Analysis')
+        st.title('Total Medal Analysis')
     if selected_year == 'Overall' and selected_country != 'Overall':
-        st.title('Overall tally of ' + str(selected_country))
+        st.title('Medal tally of ' + str(selected_country))
     if selected_year != 'Overall' and selected_country == 'Overall':
         st.title('Medal Tally in year ' + str(selected_year))
     if selected_year != 'Overall' and selected_country != 'Overall':
         st.title('Medal Tally of '+ str(selected_country) + ' in '+ str(selected_year))
 
     st.table(medal_tally)
+
+if user_menu == 'Overall Analysis':
+    editions = df['Year'].unique().shape[0] -1
+    cities = df['City'].unique().shape[0]
+    sports = df['Sport'].unique().shape[0]
+    events = df['Event'].unique().shape[0]
+    participants = df['Name'].unique().shape[0]
+    nations = df['region'].unique().shape[0]
+
+    st.title('Statistics')
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.header('Editions')
+        st.title(editions)
+    with col2:
+        st.header('Cities')
+        st.title(cities)
+    with col3:
+        st.header('Sports')
+        st.title(sports)
+
+    col1, col2, col3 = st.columns(3)
+    with col1:
+        st.header('Events')
+        st.title(events)
+    with col2:
+        st.header('Athletes')
+        st.title(participants)
+    with col3:
+        st.header('Nations')
+        st.title(nations)
