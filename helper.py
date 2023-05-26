@@ -43,19 +43,31 @@ def fetch_medal_tally(df, year, country):
 
     return x
 
-def nations_over_time(df):
-    nations_over_time = df.drop_duplicates(['Year', 'region'])['Year'].value_counts().reset_index().sort_values('index',
+def nations_over_time(df, sport):
+    temp_df=df
+    if sport != 'Overall':
+        temp_df = df[df['Sport'] == sport]
+
+    nations_over_time = temp_df.drop_duplicates(['Year', 'region'])['Year'].value_counts().reset_index().sort_values('index',
                                                                                                                 ascending=False)
     nations_over_time.rename(columns={"index": "Edition", "Year": "No of Nations"}, inplace=True)
     return(nations_over_time)
 
-def events_over_time(df):
-    events_over_time = events_over_time=df.drop_duplicates(['Year','Event'])['Year'].value_counts().reset_index().sort_values('index', ascending=False)
+def events_over_time(df, sport):
+    temp_df = df
+    if sport != 'Overall':
+        temp_df = df[df['Sport'] == sport]
+
+    events_over_time=temp_df.drop_duplicates(['Year','Event'])['Year'].value_counts().reset_index().sort_values('index', ascending=False)
     events_over_time.rename(columns={"index": "Edition", "Year": "No of Events"}, inplace=True)
     return(events_over_time)
 
-def athletes_over_time(df):
-    athletes_over_time = athletes_over_time=df.drop_duplicates(['Year','Name'])['Year'].value_counts().reset_index().sort_values('index', ascending=False)
+def athletes_over_time(df, sport):
+    temp_df = df
+    if sport != 'Overall':
+        temp_df = df[df['Sport'] == sport]
+
+    athletes_over_time=temp_df.drop_duplicates(['Year','Name'])['Year'].value_counts().reset_index().sort_values('index', ascending=False)
     athletes_over_time.rename(columns={"index": "Edition", "Year": "No of Athletes"}, inplace=True)
     return(athletes_over_time)
 
@@ -65,4 +77,8 @@ def most_successful(df, sport):
     temp_df = temp_df[temp_df['Sport'] == sport]
   x=temp_df['Name'].value_counts().reset_index().head(15).merge(df,left_on='index',right_on='Name', how='left')[['index','Name_x','Sport','NOC']].drop_duplicates(['index'])
   x.rename(columns={'index':'Name','Name_x':'Medal count'}, inplace=True)
+  # x = temp_df['Name'].value_counts().reset_index().head(15).merge(df, left_on='index', right_on='Name', how='left')[
+  #     ['index']].drop_duplicates(['index'])
+  # x.rename(columns={'index': 'Name'}, inplace=True)
   return x
+

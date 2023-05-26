@@ -5,8 +5,10 @@ import helper
 import plotly.express as px
 import matplotlib.pyplot as plt
 import seaborn as sns
+import altair as alt
+import numpy as np
 
-df = pd.read_csv('athlete_events.csv')
+df = pd.read_csv("athlete_events.csv")
 region_df = pd.read_csv('noc_regions.csv')
 df_2020 = pd.read_csv('2020_Olympics_Dataset.csv', encoding='unicode_escape')
 
@@ -74,20 +76,30 @@ if user_menu == 'Overall Analysis':
         st.header('Nations')
         st.title(nations)
 
-    nations_over_time=helper.nations_over_time(df)
-    fig = px.line(nations_over_time, x="Edition", y="No of Nations")
-    st.title("Nations participating over the years")
-    st.plotly_chart(fig)
+    st.title('Most successful athletes over the years:')
+    sport=df['Sport'].unique().tolist()
+    sport.sort()
+    sport.insert(0,'Overall')
+    selected_sport=st.sidebar.selectbox('Sport', sport)
 
-    events_over_time = helper.events_over_time(df)
-    fig = px.line(events_over_time, x="Edition", y="No of Events")
-    st.title("No of Events over the years")
-    st.plotly_chart(fig)
+    x=helper.most_successful(df, selected_sport)
+    #st.bar_chart(x)
+    st.table(x)
+    medal= x['Medal count'].to_list()
+    medal.sort(reverse=True)
+    name = x['Name'].to_list()
 
-    athletes_over_time = helper.athletes_over_time(df)
-    fig = px.line(athletes_over_time, x="Edition", y="No of Athletes")
-    st.title("No of Athletes over the years")
-    st.plotly_chart(fig)
+    source = pd.DataFrame({
+        'Medals': medal,
+        'Names': name
+    })
+
+    bar_chart = alt.Chart(source).mark_bar().encode(
+        y='Medals',
+        x='Names',
+    )
+
+    st.altair_chart(bar_chart, use_container_width=True)
 
     st.title("No of Events (For every sport) over the years")
     fig,ax= plt.subplots(figsize=(20,20))
@@ -97,10 +109,38 @@ if user_menu == 'Overall Analysis':
         annot=True)
     st.pyplot(fig)
 
-    st.title('Most successful athletes over the years:')
-    sport=df['Sport'].unique().tolist()
+    nations_over_time = helper.nations_over_time(df, selected_sport)
+    fig = px.line(nations_over_time, x="Edition", y="No of Nations")
+    st.title("Nations participating over the years")
+    st.plotly_chart(fig)
+
+    events_over_time = helper.events_over_time(df, selected_sport)
+    fig = px.line(events_over_time, x="Edition", y="No of Events")
+    st.title("No of Events over the years")
+    st.plotly_chart(fig)
+
+    athletes_over_time = helper.athletes_over_time(df, selected_sport)
+    fig = px.line(athletes_over_time, x="Edition", y="No of Athletes")
+    st.title("No of Athletes over the years")
+    st.plotly_chart(fig)
+
+if user_menu == 'Country-wise Analysis':
+    sport = df['Sport'].unique().tolist()
     sport.sort()
-    sport.insert(0,'Overall')
-    selected_sport=st.sidebar.selectbox('Sport', sport)
-    x=helper.most_successful(df, selected_sport)
-    st.table(x)
+    sport.insert(0, 'Overall')
+    selected_sport = st.sidebar.selectbox('Sport', sport)
+
+    countries = np.unique(df['region'].dropna().values).tolist()
+    countries.sort()
+    countries.insert(0, 'Overall')
+    selected_country = st.sidebar.selectbox('Country', countries)
+
+    if selected_sport == 'Overall' and selected_country == 'Overall':
+        st.title('Overall Analysis')
+    if selected_sport == 'Overall' and selected_country != 'Overall':
+        st.title('Overall Analysis of ' + str(selected_country))
+    if selected_sport != 'Overall' and selected_country == 'Overall':
+        st.title('Overall Analysis for ' + str(selected_sport))
+    if selected_sport != 'Overall' and selected_country != 'Overall':
+        st.title('Overall Analysis of '+ str(selected_country) + ' in '+ str(selected_sport))
+
