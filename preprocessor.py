@@ -27,7 +27,7 @@ def preprocess_2020(df_2020, region_df):
     return df_2020
 
 def merge(df,df_2020):
-    df = df.append(df_2020, ignore_index=True)
+    df = pd.concat(['df','df_2020'], axis=0)
     df = pd.concat([df, pd.get_dummies(df['Medal'])], axis=1)
 
     return df
